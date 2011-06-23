@@ -39,7 +39,7 @@ function toGeoJSON() {
   var panel = app.createVerticalPanel().setId('settingsPanel');
 
   var description = app.createLabel(
-    'To format your spreadsheet as GeoJSON file, select the following columns:\n'
+    'To format your spreadsheet as GeoJSON file, select the following columns:'
   ).setStyleAttribute('margin-bottom','20');
   panel.add(description);
   
@@ -49,8 +49,9 @@ function toGeoJSON() {
   // Create a button and click handler; pass in the grid object as a 
   // callback element and the handler as a click handler
   // Identify the function b as the server click handler
-  var button = app.createButton('submit')
-                  .setStyleAttribute('margin-top','10');
+  var button = app.createButton('Export')
+                  .setStyleAttribute('margin-top','10')
+                  .setId('export');
   var handler = app.createServerClickHandler('b');
   handler.addCallbackElement(grid);
   button.addClickHandler(handler);
@@ -58,7 +59,6 @@ function toGeoJSON() {
   // Add the button to the panel and the panel to the application, 
   // then display the application app in the Spreadsheet doc
   grid.setWidget(3, 1, button);
-  //panel.add(button);
   app.add(panel);
   app.setStyleAttribute('padding','20');
   ss.show(app);
@@ -73,24 +73,32 @@ function b(e) {
     'lat': e.parameter.latBox
   };
   
-  // Clean up - get the UiApp object, close it, and return
+  // Get the UI object
   var app = UiApp.getActiveApplication();
   
+  // Update the settings button (this is not firing in before the call to exportGeoJSON())
+  app.getElementById('export')
+    .setText("Exporting...")
+    .setEnabled(false);
+  
+  // Hide the settings panel
   var settingsPanel = app.getElementById('settingsPanel');
   settingsPanel.setVisible(false);
   
   // Create GeoJSON file and pass back it's filepath
   var filePath = exportGeoJSON();
   
+  // Notify the user that the file is done and in their Google Docs list
   var description = app.createLabel('The GeoJSON file has been saved in your Google Docs List.')
                        .setStyleAttribute('margin-bottom','10');
   app.add(description);
   
+  // And provide a link to it
   var fileLink = app.createAnchor('Download GeoJSON File',filePath)
                     .setStyleAttribute('font-size','150%');
   app.add(fileLink);
   
-  // The following line is REQUIRED for the widget to actually close.
+  // Update the UI.
   return app;
 }
 
