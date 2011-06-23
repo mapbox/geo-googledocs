@@ -1,0 +1,39 @@
+## In progress
+
+- export function
+  + form to define id, lat, and long (defaults from geocoder)
+  + tighten up range handler
+  + output format (as service?)
+  + filter out blanks
+  + use current spread sheet
+  - working screen
+  + UI polish
+  - handle blank columns
+  - max row limit (tested to 4000 rows)
+  - add help links (menu and after export)
+  
+
+
+- geocode function
+  - define address range (by selection?)
+  - select API
+  - enter API key
+  - define destination fields
+  - enter accuracy filter
+
+
+
+- can we generate spatialite files or something for polys?
+
+
+## Done
+
++ Normalizes column headers
++ Converts to geojson
++ Saves in your document list with a normalized header and the date.
+
+
+- save
+  + file-name-date.geojson
+  + alert
+  + offer download link
