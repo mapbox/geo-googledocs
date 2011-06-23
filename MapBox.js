@@ -21,7 +21,7 @@ function toGeoJSON() {
   var grid = app.createGrid(4, 2);
   
   // Add form elements to the grid
-  grid.setWidget(0, 0, app.createLabel('ID:'));
+  grid.setWidget(0, 0, app.createLabel('Unique ID:'));
   grid.setWidget(0, 1, app.createListBox().setName('idBox').setId('idBox')); 
   grid.setWidget(1, 0, app.createLabel('Longitude:'));
   grid.setWidget(1, 1, app.createListBox().setName('longBox').setId('longBox')); 
