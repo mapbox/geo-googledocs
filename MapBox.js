@@ -7,18 +7,18 @@ var ss = SpreadsheetApp.getActiveSpreadsheet(),
 
 // Add menu for MapBox functions
 function onOpen() {
-  var menuEntries = [ {name: "Geocode (Coming Soon)", functionName: "menu1"},
-                      {name: "Export GeoJSON", functionName: "toGeoJSON"} ];
+  var menuEntries = [ {name: "Export GeoJSON", functionName: "toGeoJSON"},
+                      {name: "Help", functionName: "helpSite"} ];
   ss.addMenu("MapBox", menuEntries);
 }
 
 // Export selected range to GeoJSON
 function toGeoJSON() {
   // Create a new UI
-  var app = UiApp.createApplication().setTitle('Export GeoJSON');
+  var app = UiApp.createApplication().setTitle('Export GeoJSON').setStyleAttribute('width', '460');
   
   // Create a grid to hold the form
-  var grid = app.createGrid(3, 2);
+  var grid = app.createGrid(4, 2);
   
   // Add form elements to the grid
   grid.setWidget(0, 0, app.createLabel('ID:'));
@@ -38,7 +38,9 @@ function toGeoJSON() {
   // Create a vertical panel...
   var panel = app.createVerticalPanel().setId('settingsPanel');
 
-  var description = app.createLabel('To format your spreadsheet as GeoJSON file, select the following columns:\n');
+  var description = app.createLabel(
+    'To format your spreadsheet as GeoJSON file, select the following columns:\n'
+  ).setStyleAttribute('margin-bottom','20');
   panel.add(description);
   
   // ...and add the grid to the panel
@@ -47,14 +49,16 @@ function toGeoJSON() {
   // Create a button and click handler; pass in the grid object as a 
   // callback element and the handler as a click handler
   // Identify the function b as the server click handler
-  var button = app.createButton('submit');
+  var button = app.createButton('submit')
+                  .setStyleAttribute('margin-top','10');
   var handler = app.createServerClickHandler('b');
   handler.addCallbackElement(grid);
   button.addClickHandler(handler);
   
   // Add the button to the panel and the panel to the application, 
   // then display the application app in the Spreadsheet doc
-  panel.add(button);
+  grid.setWidget(3, 1, button);
+  //panel.add(button);
   app.add(panel);
   app.setStyleAttribute('padding','20');
   ss.show(app);
@@ -78,10 +82,12 @@ function b(e) {
   // Create GeoJSON file and pass back it's filepath
   var filePath = exportGeoJSON();
   
-  var description = app.createLabel('The GeoJSON file has been saved in your Google Docs List. To download it, click here: \n');
+  var description = app.createLabel('The GeoJSON file has been saved in your Google Docs List.')
+                       .setStyleAttribute('margin-bottom','10');
   app.add(description);
   
-  var fileLink = app.createAnchor('Download',filePath);
+  var fileLink = app.createAnchor('Download GeoJSON File',filePath)
+                    .setStyleAttribute('font-size','150%');
   app.add(fileLink);
   
   // The following line is REQUIRED for the widget to actually close.
@@ -114,6 +120,10 @@ function exportGeoJSON() {
   return file.getUrl();
 }
 
+
+function helpSite() {
+  Broswer.msgBox('Support available here: https://github.com/mapbox/MapBox-for-Google-Docs');
+}
 
 
 /*
