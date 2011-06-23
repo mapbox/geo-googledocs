@@ -122,7 +122,7 @@ function exportGeoJSON() {
 
 
 function helpSite() {
-  Broswer.msgBox('Support available here: https://github.com/mapbox/MapBox-for-Google-Docs');
+  Browser.msgBox('Support available here: https://github.com/mapbox/MapBox-for-Google-Docs');
 }
 
 
