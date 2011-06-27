@@ -3,19 +3,26 @@ var ss = SpreadsheetApp.getActiveSpreadsheet(),
     sheet = ss.getActiveSheet(),
     activeRange = ss.getActiveRange(),
     settings = {};
-    headersRaw = getHeaders(sheet, activeRange, 1);
 
 // Add menu for MapBox functions
 function onOpen() {
-  var menuEntries = [{name: 'Export GeoJSON', functionName: 'toGeoJSON'},
-                      {name: 'Help', functionName: 'helpSite'}];
-  ss.addMenu('MapBox', menuEntries);
+  ss.addMenu('Geo', [{
+      name: 'Export GeoJSON',
+      functionName: 'toGeoJSON'
+  }, {
+      name: 'MapBox Help',
+      functionName: 'helpSite'
+  }]);
 }
 
 // Export selected range to GeoJSON
 function toGeoJSON() {
+  var headersRaw = getHeaders(sheet, activeRange, 1);
+
   // Create a new UI
-  var app = UiApp.createApplication().setTitle('Export GeoJSON').setStyleAttribute('width', '460');
+  var app = UiApp.createApplication()
+    .setTitle('Export GeoJSON')
+    .setStyleAttribute('width', '460');
 
   // Create a grid to hold the form
   var grid = app.createGrid(4, 2);
@@ -29,7 +36,7 @@ function toGeoJSON() {
   grid.setWidget(2, 1, app.createListBox().setName('latBox').setId('latBox'));
 
   // Set the list boxes to the header values
-  for (var i = 0; i < headersRaw.length; ++i) {
+  for (var i = 0; i < headersRaw.length; i++) {
     app.getElementById('idBox').addItem(headersRaw[i]);
     app.getElementById('longBox').addItem(headersRaw[i]);
     app.getElementById('latBox').addItem(headersRaw[i]);
@@ -38,10 +45,9 @@ function toGeoJSON() {
   // Create a vertical panel...
   var panel = app.createVerticalPanel().setId('settingsPanel');
 
-  var description = app.createLabel(
+  panel.add(app.createLabel(
     'To format your spreadsheet as GeoJSON file, select the following columns:'
-  ).setStyleAttribute('margin-bottom', '20');
-  panel.add(description);
+  ).setStyleAttribute('margin-bottom', '20'));
 
   // ...and add the grid to the panel
   panel.add(grid);
@@ -68,9 +74,9 @@ function toGeoJSON() {
 // export function, closing the UI window
 function b(e) {
   settings = {
-    'id': e.parameter.idBox,
+    id: e.parameter.idBox,
     'long': e.parameter.longBox,
-    'lat': e.parameter.latBox
+    lat: e.parameter.latBox
   };
 
   // Get the UI object
@@ -89,14 +95,13 @@ function b(e) {
   var filePath = exportGeoJSON();
 
   // Notify the user that the file is done and in their Google Docs list
-  var description = app.createLabel('The GeoJSON file has been saved in your Google Docs List.')
-                       .setStyleAttribute('margin-bottom', '10');
-  app.add(description);
+  app.add(app.createLabel(
+      'The GeoJSON file has been saved in your Google Docs List.')
+      .setStyleAttribute('margin-bottom', '10'));
 
   // And provide a link to it
-  var fileLink = app.createAnchor('Download GeoJSON File', filePath)
-                    .setStyleAttribute('font-size', '150%');
-  app.add(fileLink);
+  app.add(app.createAnchor('Download GeoJSON File', filePath)
+      .setStyleAttribute('font-size', '150%'));
 
   // Update the UI.
   return app;
@@ -104,43 +109,31 @@ function b(e) {
 
 function getHeaders(sheet, range, columnHeadersRowIndex) {
   var numColumns = range.getEndColumn() - range.getColumn() + 1;
-  var headersRange = sheet.getRange(columnHeadersRowIndex, range.getColumn(), 1, numColumns);
-  var headers = headersRange.getValues()[0];
-  return headers;
+  var headersRange = sheet.getRange(columnHeadersRowIndex,
+      range.getColumn(), 1, numColumns);
+  return headersRange.getValues()[0];
 }
 
 function exportGeoJSON() {
 
-  // Set up the response object
-  var response = {
-    'type': 'FeatureCollection',
-    'features': []
-  };
+  var file = DocsList.createFile(
+    normalizeHeader(ss.getName()) + '-' + Date.now() + '.geojson',
+    JSON.stringify({
+    type: 'FeatureCollection',
+      // For every row active range, make feature object
+    features: getRowsData(sheet, activeRange, 1)
+  }, null, 2));
 
-  // For every row active range, make feature object
-  var features = getRowsData(sheet, activeRange, 1);
-  response.features = features;
-
-  // Output GeoJSON
-  var outputFileName = normalizeHeader(ss.getName()) + '-'+ Date.now() + '.geojson',
-      stringToDisplay = JSON.stringify(response, null, 2),
-      file = DocsList.createFile(outputFileName, stringToDisplay);
   return file.getUrl();
 }
-
 
 function helpSite() {
   Browser.msgBox('Support available here: https://github.com/mapbox/MapBox-for-Google-Docs');
 }
 
-
-/*
- * The following is taken from the Google Apps Script example for
- * [reading docs](http://goo.gl/TigQZ). It's modified to build a
- * [GeoJSON](http://geojson.org/) object.
- *
-*/
-
+// The following is taken from the Google Apps Script example for
+// [reading docs](http://goo.gl/TigQZ). It's modified to build a
+// [GeoJSON](http://geojson.org/) object.
 
 // getRowsData iterates row by row in the input range and returns an array of objects.
 // Each object contains all the data for a given row, indexed by its normalized column name.
@@ -169,38 +162,38 @@ function getRowsData(sheet, range, columnHeadersRowIndex) {
 //   - keys: Array of Strings that define the property names for the objects to create
 function getObjects(data, keys) {
   var objects = [];
+  var headersRaw = getHeaders(sheet, activeRange, 1);
+  // TODO: remove
   var settingsIndex = [
     headersRaw.indexOf(settings.id),
     headersRaw.indexOf(settings.long),
     headersRaw.indexOf(settings.lat)
-   ];
+  ];
 
   // For each row
-  for (var i = 0; i < data.length; ++i) {
+  for (var i = 0; i < data.length; i++) {
     // If we have an id, long, and lat
     if (data[i][settingsIndex[0]] && data[i][settingsIndex[1]] && data[i][settingsIndex[2]]) {
       // Define a new GeoJSON feature object
       var feature = {
-        'type': 'Feature',
+        type: 'Feature',
         // Get ID from UI
-        'id': data[i][settingsIndex[0]],
-        'geometry': {
-          'type': 'Point',
+        id: data[i][settingsIndex[0]],
+        geometry: {
+          type: 'Point',
           // Get coordinates from UIr
-          'coordinates': [data[i][settingsIndex[1]], data[i][settingsIndex[2]]]
+          coordinates: [data[i][settingsIndex[1]], data[i][settingsIndex[2]]]
         },
         // Place holder for properties object
-        'properties': {}
+        properties: {}
       };
 
       var hasData = false;
 
-      // for each feild in row [i]
-      for (var j = 0; j < data[i].length; ++j) {
+      // for each field in row [i]
+      for (var j = 0; j < data[i].length; j++) {
         var cellData = data[i][j];
-        if (isCellEmpty(cellData)) {
-          continue;
-            }
+        if (isCellEmpty(cellData)) continue;
         // Populate the properties object with each feild
         feature.properties[keys[j]] = cellData;
         hasData = true;
@@ -219,7 +212,7 @@ function getObjects(data, keys) {
 //   - headers: Array of Strings to normalize
 function normalizeHeaders(headers) {
   var keys = [];
-  for (var i = 0; i < headers.length; ++i) {
+  for (var i = 0; i < headers.length; i++) {
     var key = normalizeHeader(headers[i]);
     if (key.length > 0) {
       keys.push(key);
@@ -240,16 +233,16 @@ function normalizeHeaders(headers) {
 function normalizeHeader(header) {
   var key = '';
   var upperCase = false;
-  for (var i = 0; i < header.length; ++i) {
+  for (var i = 0; i < header.length; i++) {
     var letter = header[i];
     if (letter == ' ' && key.length > 0) {
       upperCase = true;
       continue;
     }
-    if (!isAlnum(letter)) {
+    if (letter.match(/\w/)) {
       continue;
     }
-    if (key.length == 0 && isDigit(letter)) {
+    if (key.length === 0 && letter.match(/\d/)) {
       continue; // first character must be a letter
     }
     if (upperCase) {
@@ -266,19 +259,7 @@ function normalizeHeader(header) {
 // Arguments:
 //   - cellData: string
 function isCellEmpty(cellData) {
-  return typeof(cellData) == 'string' && cellData == '';
-}
-
-// Returns true if the character char is alphabetical, false otherwise.
-function isAlnum(char) {
-  return char >= 'A' && char <= 'Z' ||
-    char >= 'a' && char <= 'z' ||
-    isDigit(char);
-}
-
-// Returns true if the character char is a digit, false otherwise.
-function isDigit(char) {
-  return char >= '0' && char <= '9';
+  return cellData === '';
 }
 
 // Given a JavaScript 2d Array, this function returns the transposed table.
@@ -287,65 +268,17 @@ function isDigit(char) {
 // Returns a JavaScript 2d Array
 // Example: arrayTranspose([[1,2,3],[4,5,6]]) returns [[1,4],[2,5],[3,6]].
 function arrayTranspose(data) {
-  if (data.length == 0 || data[0].length == 0) {
+  if (data.length === 0 || data[0].length === 0) {
     return null;
   }
 
   var ret = [];
-  for (var i = 0; i < data[0].length; ++i) {
+  for (var l = 0; l < data[0].length; l++) {
     ret.push([]);
   }
 
-  for (var i = 0; i < data.length; ++i) {
-    for (var j = 0; j < data[i].length; ++j) {
-      ret[j][i] = data[i][j];
-    }
-  }
-
-  return ret;
-}
-
-
-
-
-// Exercise:
-
-
-function runExercise() {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var sheet = ss.getSheets()[1];
-
-  // Get the range of cells that store employee data.
-  var activeRange = sheet.getRange('B1:F5');
-
-  // For every row of employee data, generate an employee object.
-  var features = getColumnsData(sheet, activeRange);
-
-  var thirdEmployee = features[2];
-  var stringToDisplay = 'The third column is: ' + thirdEmployee.firstName + ' ' + thirdEmployee.lastName;
-  stringToDisplay += ' (id #' + thirdEmployee.employeeId + ') working in the ';
-  stringToDisplay += thirdEmployee.department + ' department and with phone number ';
-  stringToDisplay += thirdEmployee.phoneNumber;
-  ss.msgBox(stringToDisplay);
-}
-
-// Given a JavaScript 2d Array, this function returns the transposed table.
-// Arguments:
-//   - data: JavaScript 2d Array
-// Returns a JavaScript 2d Array
-// Example: arrayTranspose([[1,2,3],[4,5,6]]) returns [[1,4],[2,5],[3,6]].
-function arrayTranspose(data) {
-  if (data.length == 0 || data[0].length == 0) {
-    return null;
-  }
-
-  var ret = [];
-  for (var i = 0; i < data[0].length; ++i) {
-    ret.push([]);
-  }
-
-  for (var i = 0; i < data.length; ++i) {
-    for (var j = 0; j < data[i].length; ++j) {
+  for (var i = 0; i < data.length; i++) {
+    for (var j = 0; j < data[i].length; j++) {
       ret[j][i] = data[i][j];
     }
   }
