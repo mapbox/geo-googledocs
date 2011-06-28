@@ -174,8 +174,8 @@ function getObjects(data, keys) {
     for (var i = 0; i < data.length; i++) {
         var obj = zip(headers, data[i]);
 
-        var lat = parseInt(obj[settings.lat], 10),
-            lon = parseInt(obj[settings.lon], 10);
+        var lat = parseFloat(obj[settings.lat]),
+            lon = parseFloat(obj[settings.lon]);
 
         var coordinates = (lat && lon) ? [lon, lat] : false;
 
