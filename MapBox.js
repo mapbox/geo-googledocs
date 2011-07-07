@@ -32,11 +32,11 @@ var geocoders = {
 // Add menu for Geo functions
 function onOpen() {
   ss.addMenu('Geo', [{
-      name: 'Export selected range to GeoJSON',
-      functionName: 'gjDialog'
+      name: 'Geocode Addresses',
+      functionName: 'gcDialog'
   }, {
-      name: 'Geocode selected range',
-      functionName: 'geocode'
+      name: 'Export GeoJSON',
+      functionName: 'gjDialog'
   }, {
       name: 'Help',
       functionName: 'helpSite'
