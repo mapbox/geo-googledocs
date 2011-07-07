@@ -11,6 +11,9 @@ var ss = SpreadsheetApp.getActiveSpreadsheet(),
 // Add menu for Geo functions
 function onOpen() {
   ss.addMenu('Geo', [{
+      name: 'Geocode Addresses',
+      functionName: 'gcDialog'
+  }, {
       name: 'Export GeoJSON',
       functionName: 'gjDialog'
   }, {
