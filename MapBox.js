@@ -144,6 +144,13 @@ function geocode() {
       response = {},
       rowData = activeRange.getValues(),
       topRow = activeRange.getRow();
+      lastCol = activeRange.getLastColumn();
+  
+  // Add new columns
+  sheet.insertColumnsAfter(lastCol, 3);
+  sheet.getRange(1, lastCol+1, 1, 1).setValue('longitude');
+  sheet.getRange(1, lastCol+2, 1, 1).setValue('latitude');
+  sheet.getRange(1, lastCol+3, 1, 1).setValue('accuracy');
   
   if (activeRange.getRow() == 1) {
     rowData.shift();
@@ -159,12 +166,12 @@ function geocode() {
     
     // Send address to geocoding service
     response = getApiResponse(address, api, key);
-    // Add responses to columns in the active spreadsheet
+
+    // Add responses to columns in the active spreadsheet    
     try {
-      sheet.getRange(i+topRow, 6, 1, 1).setValue(response.longitude);
-      sheet.getRange(i+topRow, 7, 1, 1).setValue(response.latitude);
-      sheet.getRange(i+topRow, 8, 1, 1).setValue(response.accuracy);
-      sheet.getRange(i+topRow, 9, 1, 1).setValue(address);
+      sheet.getRange(i+topRow, lastCol+1, 1, 1).setValue(response.longitude);
+      sheet.getRange(i+topRow, lastCol+2, 1, 1).setValue(response.latitude);
+      sheet.getRange(i+topRow, lastCol+3, 1, 1).setValue(response.accuracy);
     } catch(e) {
       return null;
     }
@@ -192,19 +199,16 @@ function getApiResponse(address, api, key) {
   if (response.getResponseCode() == 200) {
     var responseObject = JSON.parse(response.getContentText());
     responseArray = responseObject["ResultSet"]["Results"];
+    // Throws an error about undefined properties...
     try {
-      Logger.log('longitude: ' + eval('responseObject.'+apiModel.longitude));
-      Logger.log('latitude: ' + eval('responseObject.'+apiModel.latitude));
-      Logger.log('accuracy: ' + eval('responseObject.'+apiModel.accuracy));
+      var output = {
+        longitude: eval('responseObject.'+apiModel.longitude),
+        latitude: eval('responseObject.'+apiModel.latitude),
+        accuracy: eval('responseObject.'+apiModel.accuracy)
+      };
     } catch (e) {
       return null;
     }
-    var output = {
-      longitude: eval('responseObject.'+apiModel.longitude),
-      latitude: eval('responseObject.'+apiModel.latitude),
-      accuracy: eval('responseObject.'+apiModel.accuracy)
-    };
-    Logger.log(output.longitude);
     return output;
   }
 }
@@ -277,7 +281,7 @@ function getObjects(data, keys) {
     return objects;
 }
 
-// Normalizes a string, by removing all alphanumeric characters and using mixed case
+// Normalizes a string, by removing all non alphanumeric characters and using mixed case
 // to separate words.
 function cleanCamel(str) {
     return str
