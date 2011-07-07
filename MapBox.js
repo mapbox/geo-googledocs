@@ -135,83 +135,80 @@ function helpSite() {
     Browser.msgBox('Support available here: https://github.com/mapbox/geo-googledocs');
 }
 
-// crazy expirmental geocoding feature! 
+    // crazy expirmental geocoding feature!
 
-function geocode() {
-  var address = '',
-      api = 'yahoo',
-      key = '0m1ivXjV34FJTFL7uW2WL5CbNIJrL14loXYnp2bqE3baaED9xpb_g2T9Puli2qhMdCUXtBbqPprTXqpa5d.o3Q--',
-      response = {},
-      rowData = activeRange.getValues(),
-      topRow = activeRange.getRow();
-      lastCol = activeRange.getLastColumn();
-  
-  // Add new columns
-  sheet.insertColumnsAfter(lastCol, 3);
-  sheet.getRange(1, lastCol+1, 1, 1).setValue('longitude');
-  sheet.getRange(1, lastCol+2, 1, 1).setValue('latitude');
-  sheet.getRange(1, lastCol+3, 1, 1).setValue('accuracy');
-  
-  if (activeRange.getRow() == 1) {
-    rowData.shift();
-    topRow = topRow + 1;
-  }
-  for (var i = 0; i < rowData.length; i++) {
-    var addressParts = [];
-    // Get the current address
-    for (var x = 0; x < rowData[i].length; x++) {
-      addressParts.push(rowData[i][x]);
-    }
-    address = addressParts.join(' ');
-    
-    // Send address to geocoding service
-    response = getApiResponse(address, api, key);
+    function geocode() {
+        var address = '',
+            api = 'yahoo',
+            key = '0m1ivXjV34FJTFL7uW2WL5CbNIJrL14loXYnp2bqE3baaED9xpb_g2T9Puli2qhMdCUXtBbqPprTXqpa5d.o3Q--',
+            response = {},
+            rowData = activeRange.getValues(),
+            topRow = activeRange.getRow();
+            lastCol = activeRange.getLastColumn();
 
-    // Add responses to columns in the active spreadsheet    
-    try {
-      sheet.getRange(i+topRow, lastCol+1, 1, 1).setValue(response.longitude);
-      sheet.getRange(i+topRow, lastCol+2, 1, 1).setValue(response.latitude);
-      sheet.getRange(i+topRow, lastCol+3, 1, 1).setValue(response.accuracy);
-    } catch(e) {
-      return null;
-    }
-  }
-}
+        // Add new columns
+        sheet.insertColumnsAfter(lastCol, 3);
+        sheet.getRange(1, lastCol + 1, 1, 1).setValue('longitude');
+        sheet.getRange(1, lastCol + 2, 1, 1).setValue('latitude');
+        sheet.getRange(1, lastCol + 3, 1, 1).setValue('accuracy');
 
-function getApiResponse(address, api, key) {
-  switch(api) {
-    case 'yahoo':
-    apiModel = {
-      baseUrl: 'http://where.yahooapis.com/geocode?appid='+key+'&flags=JC&q=',
-      longitude: 'ResultSet.Results[0].longitude',
-      latitude: 'ResultSet.Results[0].latitude',
-      accuracy: 'ResultSet.Results[0].quality',
-    }
-    break;
-    //TODO add more geocoders
-  }
-  var url = apiModel.baseUrl + escape(address),
-      response = UrlFetchApp.fetch(url, {
-        method:'get'
-      }),
-      responseArray = [];
+        if (activeRange.getRow() == 1) {
+            rowData.shift();
+            topRow = topRow + 1;
+        }
+        for (var i = 0; i < rowData.length; i++) {
+            address = rowData[i].join(' ');
 
-  if (response.getResponseCode() == 200) {
-    var responseObject = JSON.parse(response.getContentText());
-    responseArray = responseObject["ResultSet"]["Results"];
-    // Throws an error about undefined properties...
-    try {
-      var output = {
-        longitude: eval('responseObject.'+apiModel.longitude),
-        latitude: eval('responseObject.'+apiModel.latitude),
-        accuracy: eval('responseObject.'+apiModel.accuracy)
-      };
-    } catch (e) {
-      return null;
+            // Send address to geocoding service
+            response = getApiResponse(address, api, key);
+
+            // Add responses to columns in the active spreadsheet
+            try {
+                sheet.getRange(i + topRow, lastCol + 1, 1, 1).setValue(response.longitude);
+                sheet.getRange(i + topRow, lastCol + 2, 1, 1).setValue(response.latitude);
+                sheet.getRange(i + topRow, lastCol + 3, 1, 1).setValue(response.accuracy);
+            } catch (e) {
+                return null;
+            }
+        }
     }
-    return output;
-  }
-}
+
+    function getApiResponse(address, api, key) {
+        switch(api) {
+            case 'yahoo':
+                apiModel = {
+                  query: function(query, key) {
+                    return 'http://where.yahooapis.com/geocode?appid=' +
+                        key + '&flags=JC&q=' + query;
+                    },
+                  longitude: function(r) { return r.ResultSet.Results[0].longitude; },
+                  latitude: function(r) { return r.ResultSet.Results[0].latitude; },
+                  accuracy: function(r) { return r.ResultSet.Results[0].quality; }
+                }
+                break;
+                //TODO add more geocoders
+        }
+        var url = apiModel.query(escape(address), key),
+            response = UrlFetchApp.fetch(url, {
+                method:'get'
+            });
+
+        if (response.getResponseCode() == 200) {
+            var responseObject = JSON.parse(response.getContentText()),
+                responseArray = responseObject["ResultSet"]["Results"];
+            // Throws an error about undefined properties...
+            try {
+                var output = {
+                    longitude: apiModel.longitude(responseObject),
+                    latitude: apiModel.latitude(responseObject),
+                    accuracy: apiModel.accuracy(responseObject)
+                };
+            } catch (e) {
+                return null;
+            }
+            return output;
+        }
+    }
 
 // getRowsData iterates row by row in the input range and returns an array of objects.
 // Each object contains all the data for a given row, indexed by its normalized column name.
@@ -290,3 +287,4 @@ function cleanCamel(str) {
         .replace(/[^\w]/g, '')
         .replace(/^(.)/, function($1) { return $1.toLowerCase(); });
 }
+
