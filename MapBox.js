@@ -11,8 +11,11 @@ var ss = SpreadsheetApp.getActiveSpreadsheet(),
 // Add menu for Geo functions
 function onOpen() {
   ss.addMenu('Geo', [{
-      name: 'Export GeoJSON',
+      name: 'Export selected range to GeoJSON',
       functionName: 'gjDialog'
+  }, {
+      name: 'Geocode selected range',
+      functionName: 'geocode'
   }, {
       name: 'Help',
       functionName: 'helpSite'
@@ -130,6 +133,80 @@ function createGJFile() {
 
 function helpSite() {
     Browser.msgBox('Support available here: https://github.com/mapbox/geo-googledocs');
+}
+
+// crazy expirmental geocoding feature! 
+
+function geocode() {
+  var address = '',
+      api = 'yahoo',
+      key = '0m1ivXjV34FJTFL7uW2WL5CbNIJrL14loXYnp2bqE3baaED9xpb_g2T9Puli2qhMdCUXtBbqPprTXqpa5d.o3Q--',
+      response = {},
+      rowData = activeRange.getValues(),
+      topRow = activeRange.getRow();
+  
+  if (activeRange.getRow() == 1) {
+    rowData.shift();
+    topRow = topRow + 1;
+  }
+  for (var i = 0; i < rowData.length; i++) {
+    var addressParts = [];
+    // Get the current address
+    for (var x = 0; x < rowData[i].length; x++) {
+      addressParts.push(rowData[i][x]);
+    }
+    address = addressParts.join(' ');
+    
+    // Send address to geocoding service
+    response = getApiResponse(address, api, key);
+    // Add responses to columns in the active spreadsheet
+    try {
+      sheet.getRange(i+topRow, 6, 1, 1).setValue(response.longitude);
+      sheet.getRange(i+topRow, 7, 1, 1).setValue(response.latitude);
+      sheet.getRange(i+topRow, 8, 1, 1).setValue(response.accuracy);
+      sheet.getRange(i+topRow, 9, 1, 1).setValue(address);
+    } catch(e) {
+      return null;
+    }
+  }
+}
+
+function getApiResponse(address, api, key) {
+  switch(api) {
+    case 'yahoo':
+    apiModel = {
+      baseUrl: 'http://where.yahooapis.com/geocode?appid='+key+'&flags=JC&q=',
+      longitude: 'ResultSet.Results[0].longitude',
+      latitude: 'ResultSet.Results[0].latitude',
+      accuracy: 'ResultSet.Results[0].quality',
+    }
+    break;
+    //TODO add more geocoders
+  }
+  var url = apiModel.baseUrl + escape(address),
+      response = UrlFetchApp.fetch(url, {
+        method:'get'
+      }),
+      responseArray = [];
+
+  if (response.getResponseCode() == 200) {
+    var responseObject = JSON.parse(response.getContentText());
+    responseArray = responseObject["ResultSet"]["Results"];
+    try {
+      Logger.log('longitude: ' + eval('responseObject.'+apiModel.longitude));
+      Logger.log('latitude: ' + eval('responseObject.'+apiModel.latitude));
+      Logger.log('accuracy: ' + eval('responseObject.'+apiModel.accuracy));
+    } catch (e) {
+      return null;
+    }
+    var output = {
+      longitude: eval('responseObject.'+apiModel.longitude),
+      latitude: eval('responseObject.'+apiModel.latitude),
+      accuracy: eval('responseObject.'+apiModel.accuracy)
+    };
+    Logger.log(output.longitude);
+    return output;
+  }
 }
 
 // getRowsData iterates row by row in the input range and returns an array of objects.
