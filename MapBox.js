@@ -409,11 +409,9 @@ function getObjects(data, keys) {
 // Normalizes a string, by removing all non alphanumeric characters and using mixed case
 // to separate words.
 function cleanCamel(str) {
-  return str
+    return str
          .replace(/\s(.)/g, function($1) { return $1.toUpperCase(); })
          .replace(/\s/g, '')
-         .replace(/[^\w]/g, '')
-         .replace(/[^\w]/g, '')
          .replace(/[^\w]/g, '')
          .replace(/^(.)/, function($1) { return $1.toLowerCase(); });
 }
