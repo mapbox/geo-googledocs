@@ -233,8 +233,8 @@ function gcDialog() {
 // Geocode selected range with user-selected api and key
 function geocode(e) {
   var address = '',
-      api = e.parameter.apiBox,
-      key = e.parameter.keyBox,
+      api = 'yahoo', // e.parameter.apiBox,
+      key = '0m1ivXjV34FJTFL7uW2WL5CbNIJrL14loXYnp2bqE3baaED9xpb_g2T9Puli2qhMdCUXtBbqPprTXqpa5d.o3Q--', // e.parameter.keyBox,
       response = {},
       rowData = activeRange.getValues(),
       topRow = activeRange.getRow(),
@@ -300,7 +300,7 @@ function closeUiGc() {
   var app = UiApp.createApplication()
     .setTitle('Geocode Addresses')
     .setStyleAttribute('width', '460')
-    setStyleAttribute('padding', '20');
+    .setStyleAttribute('padding', '20');
 
   // Exporting message  
   app.add(app.createLabel(
@@ -332,7 +332,7 @@ function getApiResponse(address, api, key) {
       Logger.log('The geocoder service being used may be offline.');
     }
     // If no or bad response, sleep for 5 seconds and try again
-    Logger.log('Something bad happened; retrying. Round: '+i+1);
+    Logger.log('Something bad happened; retrying. Round: '+(i+1));
     Utilities.sleep(5000);
   }
   Logger.log('Tried 5 times, giving up.');
@@ -409,7 +409,7 @@ function getObjects(data, keys) {
 // Normalizes a string, by removing all non alphanumeric characters and using mixed case
 // to separate words.
 function cleanCamel(str) {
-    return str
+  return str
          .replace(/\s(.)/g, function($1) { return $1.toUpperCase(); })
          .replace(/\s/g, '')
          .replace(/[^\w]/g, '')
