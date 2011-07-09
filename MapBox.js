@@ -233,8 +233,8 @@ function gcDialog() {
 // Geocode selected range with user-selected api and key
 function geocode(e) {
   var address = '',
-      api = 'yahoo', //e.parameter.apiBox,
-      key = '0m1ivXjV34FJTFL7uW2WL5CbNIJrL14loXYnp2bqE3baaED9xpb_g2T9Puli2qhMdCUXtBbqPprTXqpa5d.o3Q--', //e.parameter.keyBox,
+      api = e.parameter.apiBox,
+      key = e.parameter.keyBox,
       response = {},
       rowData = activeRange.getValues(),
       topRow = activeRange.getRow(),
@@ -414,5 +414,6 @@ function cleanCamel(str) {
          .replace(/\s/g, '')
          .replace(/[^\w]/g, '')
          .replace(/[^\w]/g, '')
-        .replace(/^(.)/, function($1) { return $1.toLowerCase(); });
+         .replace(/[^\w]/g, '')
+         .replace(/^(.)/, function($1) { return $1.toLowerCase(); });
 }
