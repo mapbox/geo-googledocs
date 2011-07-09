@@ -233,8 +233,8 @@ function gcDialog() {
 // Geocode selected range with user-selected api and key
 function geocode(e) {
   var address = '',
-      api = 'yahoo', // e.parameter.apiBox,
-      key = '0m1ivXjV34FJTFL7uW2WL5CbNIJrL14loXYnp2bqE3baaED9xpb_g2T9Puli2qhMdCUXtBbqPprTXqpa5d.o3Q--', // e.parameter.keyBox,
+      api = e.parameter.apiBox,
+      key = e.parameter.keyBox,
       response = {},
       rowData = activeRange.getValues(),
       topRow = activeRange.getRow(),
@@ -266,9 +266,13 @@ function geocode(e) {
     response = getApiResponse(address, api, key);
 
     // Add responses to columns in the active spreadsheet
-    sheet.getRange(i + topRow, lastCol + 1, 1, 1).setValue(response.longitude);
-    sheet.getRange(i + topRow, lastCol + 2, 1, 1).setValue(response.latitude);
-    sheet.getRange(i + topRow, lastCol + 3, 1, 1).setValue(response.accuracy);
+    try {
+      sheet.getRange(i + topRow, lastCol + 1, 1, 1).setValue(response.longitude);
+      sheet.getRange(i + topRow, lastCol + 2, 1, 1).setValue(response.latitude);
+      sheet.getRange(i + topRow, lastCol + 3, 1, 1).setValue(response.accuracy);
+    } catch(e) {
+      Logger.log(e);
+    }
   }
   
   // Update UI to notify user the geocoding is done
@@ -331,11 +335,22 @@ function getApiResponse(address, api, key) {
     } else {
       Logger.log('The geocoder service being used may be offline.');
     }
-    // If no or bad response, sleep for 5 seconds and try again
+    // If no or bad response, sleep for 5 * i seconds and try again
     Logger.log('Something bad happened; retrying. Round: '+(i+1));
-    Utilities.sleep(5000);
+    for (var x = 0; x <= i; x++) {
+      if (x < 3) { wait(5) };
+      if (x = 3) { wait(60) };
+      if (x = 4) { wait(120) };
+    }
   }
   Logger.log('Tried 5 times, giving up.');
+}
+
+function wait(ms) {
+  for (var i = 0; i < ms; i++) {
+    Logger.log('Sleeping for '+(i+1)+' seconds.');
+    Utilities.sleep(1000);
+  }
 }
 
 // getRowsData iterates row by row in the input range and returns an array of objects.
