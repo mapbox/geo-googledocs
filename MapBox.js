@@ -232,24 +232,43 @@ function gcDialog() {
 
 // Geocode selected range with user-selected api and key
 function geocode(e) {
-  var address = '',
+  var ss = SpreadsheetApp.getActiveSpreadsheet(),
+      sheet = ss.getActiveSheet(),
+      activeRange = ss.getActiveRange(),
+      address = '',
       api = e.parameter.apiBox,
       key = e.parameter.keyBox,
       response = {},
       rowData = activeRange.getValues(),
       topRow = activeRange.getRow(),
       lastCol = activeRange.getLastColumn();
+
   
   // update UI
   updateUiGc();
   
-  // Add new columns
-  sheet.insertColumnsAfter(lastCol, 3);
+  // Check to see if destination columns already exist
   
-  // Set new column headers
-  sheet.getRange(1, lastCol + 1, 1, 1).setValue('longitude');
-  sheet.getRange(1, lastCol + 2, 1, 1).setValue('latitude');
-  sheet.getRange(1, lastCol + 3, 1, 1).setValue('accuracy');
+  var res = getDestCols();
+  
+  if (res.long >= 0 && res.lat  >= 0 && res.acc >= 0) {
+    var longCol = (res.long+1),
+        latCol = (res.lat+1),
+        accCol = (res.acc+1);  
+  } else {
+   // Add new columns
+    sheet.insertColumnsAfter(lastCol, 3);
+    
+    // Set new column headers
+    sheet.getRange(1, lastCol + 1, 1, 1).setValue('geo_longitude');
+    sheet.getRange(1, lastCol + 2, 1, 1).setValue('geo_latitude');
+    sheet.getRange(1, lastCol + 3, 1, 1).setValue('geo_accuracy');
+ 
+    // Set destination columns
+    var longCol = (lastCol + 1),
+        latCol = (lastCol + 2),
+        accCol = (lastCol + 3);
+  }
 
   // Don't geocode the first row!
   if (activeRange.getRow() == 1) {
@@ -262,21 +281,53 @@ function geocode(e) {
     // Join all fields in selected row with a space
     address = rowData[i].join(' ');
 
-    // Send address to query the geocoding api
-    response = getApiResponse(address, api, key);
-
-    // Add responses to columns in the active spreadsheet
-    try {
-      sheet.getRange(i + topRow, lastCol + 1, 1, 1).setValue(response.longitude);
-      sheet.getRange(i + topRow, lastCol + 2, 1, 1).setValue(response.latitude);
-      sheet.getRange(i + topRow, lastCol + 3, 1, 1).setValue(response.accuracy);
-    } catch(e) {
-      Logger.log(e);
+    // Concatenate all geo columns
+    if (longCol && latCol&& accCol) {
+      var testString = sheet.getRange(i + topRow, longCol, 1, 1).getValues()
+          + sheet.getRange(i + topRow, latCol, 1, 1).getValues() 
+          + sheet.getRange(i + topRow, accCol, 1, 1).getValues();
+    }
+    // Test to see that all geo columns are empty    
+    Logger.log(testString);
+    if (testString == '') {
+      // Send address to query the geocoding api
+      response = getApiResponse(address, api, key);
+  
+      // Add responses to columns in the active spreadsheet
+      try {
+        sheet.getRange(i + topRow, longCol, 1, 1).setValue(response.longitude);
+        sheet.getRange(i + topRow, latCol, 1, 1).setValue(response.latitude);
+        sheet.getRange(i + topRow, accCol, 1, 1).setValue(response.accuracy);
+      } catch(e) {
+        Logger.log(e);
+      }
     }
   }
   
   // Update UI to notify user the geocoding is done
   closeUiGc();
+}
+
+// Check the spreadsheet to see if geo columns exist
+function getDestCols() {
+  // Get all headers of the active spreadsheet
+  var headers = getHeaders(sheet, sheet.getRange(1,1,1,sheet.getLastRow()), 1);
+  
+  // Search through array for geo cols
+  var output = {
+    'long': include(headers,'geo_longitude'),
+    'lat': include(headers,'geo_latitude'),
+    'acc': include(headers,'geo_accuracy')
+  };
+  
+  Logger.log(output.long);
+  return output;
+}
+
+// Find item in array, return its index
+function include(arr,obj) {
+    Logger.log(arr.indexOf(obj));
+    return arr.indexOf(obj);
 }
 
 // Update the UI to show geocoding status
