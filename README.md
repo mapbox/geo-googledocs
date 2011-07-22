@@ -20,6 +20,15 @@ map design studio.
   geocodes, you can add them using a geocoding service like those provided by
   Yahoo PlaceFinder or Google Maps. (This feature is coming soon.)
 
+## Installation
+
+- Copy the [source of mapbox.js](https://raw.github.com/mapbox/geo-googledocs/geocoder/MapBox.js)
+- Open your spreadsheet and goto `tools` > `script editor`
+- Replace the content in the text box with the copied source from mapbox.js
+- Set the name of this script to `geo`
+- Go to `file` > `save` and close the popup window
+- Refresh your spreadsheet and you will see a new menu called `Geo` added after `Help` on the menu bar
+
 ## Authors
 
 * Dave Cole [[dhcole](https://github.com/dhcole)]
