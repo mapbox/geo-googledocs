@@ -11,13 +11,29 @@ var geocoders = {
           key + '&flags=JC&q=' + query;
       },
       parse: function(r) {
-        if (r.ResultSet && r.ResultSet.Results && r.ResultSet.Results.length) {
+        try {
           return {
             longitude: r.ResultSet.Results[0].longitude,
             latitude: r.ResultSet.Results[0].latitude,
             accuracy: r.ResultSet.Results[0].quality
           }
-        } else {
+        } catch(e) {
+          return { longitude: '', latitude: '', accuracy: '' };
+        }
+      }
+    },
+    mapquest: {
+      query: function(query, key) {
+        return 'http://open.mapquestapi.com/nominatim/v1/search?format=json&limit=1&q=' + query;
+      },
+      parse: function(r) {
+        try {
+          return {
+            longitude: r[0].lon,
+            latitude: r[0].lat,
+            accuracy: r[0].type
+          }
+        } catch(e) {
           return { longitude: '', latitude: '', accuracy: '' };
         }
       }
@@ -197,6 +213,7 @@ function gcDialog() {
   grid.setWidget(0, 1, app.createListBox()
     .setName('apiBox')
     .setId('apiBox')
+    .addItem('mapquest')
     .addItem('yahoo'));
   grid.setWidget(1, 0, app.createLabel('API key:'));
   grid.setWidget(1, 1, app.createTextBox().setName('keyBox').setId('keyBox'));
@@ -236,8 +253,8 @@ function geocode(e) {
       sheet = ss.getActiveSheet(),
       activeRange = ss.getActiveRange(),
       address = '',
-      api = e.parameter.apiBox,
-      key = e.parameter.keyBox,
+      api = 'mapquest', // e.parameter.apiBox,
+      key =  '', // e.parameter.keyBox,
       response = {},
       rowData = activeRange.getValues(),
       topRow = activeRange.getRow(),
@@ -370,7 +387,7 @@ function closeUiGc() {
 // Send address to api
 function getApiResponse(address, api, key) {
   var geocoder = geocoders[api],
-      url = geocoder.query(escape(address), key);
+      url = geocoder.query(encodeURI((address), key));
   
   // If the geocoder returns a response, parse it and return components
   // If the geocoder responds poorly or doesn't response, try again
