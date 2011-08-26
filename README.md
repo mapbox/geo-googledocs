@@ -13,9 +13,6 @@ map design studio.
   coordinates) can be exported to a TileMill-ready
   file. After exporting, just copy the GeoJSON file to your
   `TileMill/files/data` directory. 
-
-## Roadmap
-
 - **Geocode arbitrary addresses** If your spreadsheet does not have
   geocodes, you can add them using a geocoding service like those provided by
   Yahoo PlaceFinder or Google Maps. (This feature is coming soon.)
