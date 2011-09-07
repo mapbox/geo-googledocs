@@ -19,7 +19,7 @@ map design studio.
 
 ## Installation
 
-- Copy the [source of mapbox.js](https://raw.github.com/mapbox/geo-googledocs/geocoder/MapBox.js)
+- Copy the [source of mapbox.js](https://raw.github.com/mapbox/geo-googledocs/master/MapBox.js)
 - Open your spreadsheet and goto `tools` > `script editor`
 - Replace the content in the text box with the copied source from mapbox.js
 - Set the name of this script to `geo`
