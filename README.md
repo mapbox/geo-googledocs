@@ -15,7 +15,7 @@ map design studio.
   `TileMill/files/data` directory. 
 - **Geocode arbitrary addresses** If your spreadsheet does not have
   geocodes, you can add them using a geocoding service like those provided by
-  Yahoo PlaceFinder or Google Maps. (This feature is coming soon.)
+  [Yahoo PlaceFinder](http://developer.yahoo.com/geo/placefinder/) or [MapQuest Nominatim](http://developer.mapquest.com/web/products/open/nominatim). Consult these services for their terms of use.
 
 ## Installation
 
