@@ -1,6 +1,8 @@
 # Geo for Google Docs
 
-## A MapBox Project
+[Read the blog post & instructions for using this system](http://mapbox.com/blog/mapping-google-doc-spreadsheet/).
+
+## A [MapBox](http://mapbox.com/) Project
 
 Geo for Google Docs is a set of tools that make it easy to use data from
 Google Docs Spreadsheets in [TileMill](http://tilemill.com), an open source
