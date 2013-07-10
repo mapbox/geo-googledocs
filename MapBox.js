@@ -232,7 +232,7 @@ function gcDialog() {
     .setId('apiBox')
     .addItem('mapquest')
     .addItem('yahoo')
-	.addItem('cicero'));
+    .addItem('cicero'));
   grid.setWidget(1, 0, app.createLabel('API key:'));
   grid.setWidget(1, 1, app.createTextBox().setName('keyBox').setId('keyBox'));
 
