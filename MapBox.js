@@ -37,6 +37,23 @@ var geocoders = {
           return { longitude: '', latitude: '', accuracy: '' };
         }
       }
+    },
+    cicero: {
+      query: function(query, key) {
+        return 'https://cicero.azavea.com/v3.1/legislative_district?format=json&key=' + 
+          key + '&search_loc=' + query; 
+      },
+      parse: function(r) {
+        try {
+          return {
+            longitude: r.response.results.candidates[0].x,
+            latitude: r.response.results.candidates[0].y,
+            accuracy: r.response.results.candidates[0].score
+          }
+        } catch(e) {
+          return { longitude: '', latitude: '', accuracy: '' };
+        }
+      }
     }
 };
 
@@ -214,7 +231,8 @@ function gcDialog() {
     .setName('apiBox')
     .setId('apiBox')
     .addItem('mapquest')
-    .addItem('yahoo'));
+    .addItem('yahoo')
+	.addItem('cicero'));
   grid.setWidget(1, 0, app.createLabel('API key:'));
   grid.setWidget(1, 1, app.createTextBox().setName('keyBox').setId('keyBox'));
 
