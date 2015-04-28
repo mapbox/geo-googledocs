@@ -3,7 +3,7 @@ var ss = SpreadsheetApp.getActiveSpreadsheet(),
     sheet = ss.getActiveSheet(),
     activeRange = ss.getActiveRange(),
     settings = {};
-    
+
 var geocoders = {
     yahoo: {
       query: function(query, key) {
@@ -40,8 +40,8 @@ var geocoders = {
     },
     cicero: {
       query: function(query, key) {
-        return 'https://cicero.azavea.com/v3.1/legislative_district?format=json&key=' + 
-          key + '&search_loc=' + query; 
+        return 'https://cicero.azavea.com/v3.1/legislative_district?format=json&key=' +
+          key + '&search_loc=' + query;
       },
       parse: function(r) {
         try {
@@ -139,13 +139,13 @@ function exportGJ(e) {
     lon: e.parameter.lonBox,
     lat: e.parameter.latBox
   };
-  
+
   // Update ui to show status
   updateUi();
-  
+
   // Create GeoJSON file and pass back it's filepath
   var file = createGJFile();
-  
+
   // Update ui to deliver file
   displayFile(file);
 }
@@ -173,7 +173,7 @@ function displayFile(file) {
     .setTitle('Export GeoJSON')
     .setStyleAttribute('width', '460')
     .setStyleAttribute('padding', '20');
-  
+
   // Notify the user that the file is done and in the Google Docs list
   app.add(
     app.createLabel('The GeoJSON file has been saved in your Google Docs List.')
@@ -185,7 +185,7 @@ function displayFile(file) {
     app.createAnchor('Download GeoJSON File', file.getUrl())
     .setStyleAttribute('font-size', '150%')
   );
-  
+
   // Show the new UI
   ss.show(app);
 }
@@ -200,13 +200,13 @@ function getHeaders(sheet, range, columnHeadersRowIndex) {
 
 // Create the GeoJSON file and returns its filepath
 function createGJFile() {
-  return DocsList.createFile(
-    (cleanCamel(ss.getName()) || 'unsaved') + '-' + Date.now() + '.geojson',
-    Utilities.jsonStringify({
-      type: 'FeatureCollection',
-      features: getRowsData(sheet, activeRange, 1)
-    })
-  );
+    return DriveApp.createFile(
+        (cleanCamel(ss.getName()) || 'unsaved') + '-' + Date.now() + '.geojson',
+        Utilities.jsonStringify({
+            type: 'FeatureCollection',
+            features: getRowsData(sheet, activeRange, 1)
+        })
+    );
 }
 
 // Help menu
@@ -278,27 +278,27 @@ function geocode(e) {
       topRow = activeRange.getRow(),
       lastCol = activeRange.getLastColumn();
 
-  
+
   // update UI
   updateUiGc();
-  
+
   // Check to see if destination columns already exist
-  
+
   var res = getDestCols();
-  
+
   if (res.long >= 0 && res.lat  >= 0 && res.acc >= 0) {
     var longCol = (res.long+1),
         latCol = (res.lat+1),
-        accCol = (res.acc+1);  
+        accCol = (res.acc+1);
   } else {
    // Add new columns
     sheet.insertColumnsAfter(lastCol, 3);
-    
+
     // Set new column headers
     sheet.getRange(1, lastCol + 1, 1, 1).setValue('geo_longitude');
     sheet.getRange(1, lastCol + 2, 1, 1).setValue('geo_latitude');
     sheet.getRange(1, lastCol + 3, 1, 1).setValue('geo_accuracy');
- 
+
     // Set destination columns
     var longCol = (lastCol + 1),
         latCol = (lastCol + 2),
@@ -310,7 +310,7 @@ function geocode(e) {
     rowData.shift();
     topRow = topRow + 1;
   }
-  
+
   // For each row, query the API and update the spreadsheet
   for (var i = 0; i < rowData.length; i++) {
     // Join all fields in selected row with a space
@@ -319,15 +319,15 @@ function geocode(e) {
     // Concatenate all geo columns
     if (longCol && latCol&& accCol) {
       var testString = sheet.getRange(i + topRow, longCol, 1, 1).getValues()
-          + sheet.getRange(i + topRow, latCol, 1, 1).getValues() 
+          + sheet.getRange(i + topRow, latCol, 1, 1).getValues()
           + sheet.getRange(i + topRow, accCol, 1, 1).getValues();
     }
-    // Test to see that all geo columns are empty    
+    // Test to see that all geo columns are empty
     Logger.log(testString);
     if (testString == '') {
       // Send address to query the geocoding api
       response = getApiResponse(address, api, key);
-  
+
       // Add responses to columns in the active spreadsheet
       try {
         sheet.getRange(i + topRow, longCol, 1, 1).setValue(response.longitude);
@@ -338,7 +338,7 @@ function geocode(e) {
       }
     }
   }
-  
+
   // Update UI to notify user the geocoding is done
   closeUiGc();
 }
@@ -347,14 +347,14 @@ function geocode(e) {
 function getDestCols() {
   // Get all headers of the active spreadsheet
   var headers = getHeaders(sheet, sheet.getRange(1,1,1,sheet.getLastRow()), 1);
-  
+
   // Search through array for geo cols
   var output = {
     'long': include(headers,'geo_longitude'),
     'lat': include(headers,'geo_latitude'),
     'acc': include(headers,'geo_accuracy')
   };
-  
+
   Logger.log(output.long);
   return output;
 }
@@ -373,7 +373,7 @@ function updateUiGc() {
     .setStyleAttribute('width', '460')
     .setStyleAttribute('padding', '20');
 
-  // Show working message  
+  // Show working message
   app.add(app
     .createLabel('Geocoding these addresses...')
     .setStyleAttribute('margin-bottom', '10')
@@ -392,7 +392,7 @@ function closeUiGc() {
     .setStyleAttribute('width', '460')
     .setStyleAttribute('padding', '20');
 
-  // Exporting message  
+  // Exporting message
   app.add(app.createLabel(
     'Geocoding is done! You may close this window.')
     .setStyleAttribute('margin-bottom', '10')
@@ -406,7 +406,7 @@ function closeUiGc() {
 function getApiResponse(address, api, key) {
   var geocoder = geocoders[api],
       url = geocoder.query(encodeURI(address), encodeURI(key));
-  
+
   // If the geocoder returns a response, parse it and return components
   // If the geocoder responds poorly or doesn't response, try again
   for (var i = 0; i < 5; i++) {
