@@ -216,13 +216,13 @@ function getHeaders(sheet, range, columnHeadersRowIndex) {
 
 // Create the GeoJSON file and returns its filepath
 function createGJFile() {
-  return DriveApp.createFile(
-          (cleanCamel(ss.getName()) || 'unsaved') + '-' + Date.now() + '.geojson',
-          Utilities.jsonStringify({
-              type: 'FeatureCollection',
-              features: getRowsData(sheet, activeRange, 1)
-          })
-      );
+    return DriveApp.createFile(
+        (cleanCamel(ss.getName()) || 'unsaved') + '-' + Date.now() + '.geojson',
+        Utilities.jsonStringify({
+            type: 'FeatureCollection',
+            features: getRowsData(sheet, activeRange, 1)
+        })
+    );
 }
 
 // Help menu
