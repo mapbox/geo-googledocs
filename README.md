@@ -50,7 +50,7 @@ Say you've got a spreadsheet with a column for addresses. It could be a street a
 
 After you've installed the Geo script in your spreadsheet, you can use the [MapQuest Nominatim](http://developer.mapquest.com/web/products/open/nominatim) or [Yahoo PlaceFinder](http://developer.yahoo.com/geo/placefinder/) services to get geocodes for your addresses. First select the cells with your address data. This could be one column or several. If you select multiple columns (such as 'Address', 'City', 'State') the columns with be joined together from left to right and sent to the geocoding service. You can also select just a few cells to geocode instead of a whole column. This is useful when you add new rows or update existing addresses and only want to geocode the new data.
 
-Once you've selected your address data, go to `Geo` > `Geocode Addresses`. If this is the first time you're using the script, you'll need to authorize it to access your spreadsheet and then go to `Geocode Addresses` again. Now all you need to do is set your preferred API (and enter an API key for Yahoo - an API key is not required for MapQuest), and click `Geocode`.
+Once you've selected your address data, go to `Geo` > `Geocode Addresses`. If this is the first time you're using the script, you'll need to authorize it to access your spreadsheet and then go to `Geocode Addresses` again. Now all you need to do is set your preferred API, enter an API key if the service requires it, and click `Geocode`.
 
 ![Geo menu with data in it](https://farm7.static.flickr.com/6044/6237508379_58021d70c5.jpg)
 
