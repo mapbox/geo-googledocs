@@ -22,6 +22,22 @@ var geocoders = {
         }
       }
     },
+  yandex: {
+      query: function(query, key) {
+        return 'http://geocode-maps.yandex.ru/1.x/?format=json&results=1&geocode=' + query + '&lang=en-US';
+      },
+      parse: function(r) {
+        try {
+          return {
+            longitude: r.response.GeoObjectCollection.featureMember[0].GeoObject.Point.pos,
+            latitude: r.response.GeoObjectCollection.featureMember[0].GeoObject.Point.pos,
+            accuracy: r.response.GeoObjectCollection.featureMember[0].GeoObject.metaDataProperty.GeocoderMetaData.precision
+          }
+        } catch(e) {
+          return { longitude: '', latitude: '', accuracy: '' };
+        }
+      }
+    },
     mapquest: {
       query: function(query, key) {
         return 'http://open.mapquestapi.com/nominatim/v1/search?format=json&limit=1&q=' + query;
@@ -232,6 +248,7 @@ function gcDialog() {
     .setId('apiBox')
     .addItem('mapquest')
     .addItem('yahoo')
+    .addItem('yandex')
     .addItem('cicero'));
   grid.setWidget(1, 0, app.createLabel('API key:'));
   grid.setWidget(1, 1, app.createTextBox().setName('keyBox').setId('keyBox'));
